@@ -1,14 +1,8 @@
-# main.tf
 terraform {
-  required_version = ">= 1.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~>3.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~>3.1"
     }
   }
 }
@@ -26,14 +20,14 @@ provider "azurerm" {
   use_cli = false
 }
 
-resource "azurerm_resource_group" "web" {
-  name     = "rg-sitioweb"
-  location = "West Europe"
-}
-
 resource "random_integer" "rand" {
   min = 10000
   max = 99999
+}
+
+resource "azurerm_resource_group" "web" {
+  name     = "rg-sitioweb-${random_integer.rand.result}"
+  location = "West Europe"
 }
 
 resource "azurerm_storage_account" "web" {
@@ -48,11 +42,6 @@ resource "azurerm_storage_account" "web" {
     index_document     = "index.html"
     error_404_document = "404.html"
   }
-
-  tags = {
-    Environment = "Production"
-    Project     = "SitioWebEstatico"
-  }
 }
 
 resource "azurerm_storage_blob" "index" {
@@ -60,7 +49,7 @@ resource "azurerm_storage_blob" "index" {
   storage_account_name   = azurerm_storage_account.web.name
   storage_container_name = "$web"
   type                   = "Block"
-  source                 = "${path.module}/../website/index.html"
+  source                 = "../website/index.html"
   content_type           = "text/html"
 }
 
