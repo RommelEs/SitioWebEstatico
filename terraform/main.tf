@@ -1,8 +1,14 @@
+# main.tf
 terraform {
+  required_version = ">= 1.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~>3.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~>3.1"
     }
   }
 }
@@ -42,6 +48,11 @@ resource "azurerm_storage_account" "web" {
     index_document     = "index.html"
     error_404_document = "404.html"
   }
+
+  tags = {
+    Environment = "Production"
+    Project     = "SitioWebEstatico"
+  }
 }
 
 resource "azurerm_storage_blob" "index" {
@@ -49,7 +60,7 @@ resource "azurerm_storage_blob" "index" {
   storage_account_name   = azurerm_storage_account.web.name
   storage_container_name = "$web"
   type                   = "Block"
-  source                 = "../website/index.html"
+  source                 = "${path.module}/../website/index.html"
   content_type           = "text/html"
 }
 
@@ -59,6 +70,7 @@ resource "azurerm_storage_blob" "error" {
   storage_container_name = "$web"
   type                   = "Block"
   source                 = "${path.module}/../website/404.html"
+  content_type           = "text/html"
 }
 
 resource "azurerm_storage_blob" "style" {
@@ -67,4 +79,5 @@ resource "azurerm_storage_blob" "style" {
   storage_container_name = "$web"
   type                   = "Block"
   source                 = "${path.module}/../website/style.css"
+  content_type           = "text/css"
 }
