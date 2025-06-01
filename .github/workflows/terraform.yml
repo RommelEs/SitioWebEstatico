@@ -1,4 +1,5 @@
 name: Terraform CI
+
 on:
   push:
     branches:
@@ -10,6 +11,12 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    
+    # Especifica el directorio de trabajo
+    defaults:
+      run:
+        working-directory: ./terraform
+    
     env:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
