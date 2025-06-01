@@ -6,21 +6,26 @@ on:
   pull_request:
     branches:
       - main
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
     
-    # Especifica el directorio de trabajo
     defaults:
       run:
         working-directory: ./terraform
     
     env:
-      # Usar tus secrets AZURE_* y mapearlos a las variables ARM_* que necesita Terraform
+      # Variables para autenticación de Terraform con Azure
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      # Variables para tus variables de Terraform
+      TF_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+      TF_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+      TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
     
     steps:
     - name: Checkout repository
@@ -32,9 +37,9 @@ jobs:
         terraform_version: '1.5.6'
     
     - name: Terraform Init
-      run: terraform init -upgrade
+      run: terraform init
+      timeout-minutes: 5
     
-    # Debug: Verificar que las variables estén configuradas
     - name: Debug Environment Variables
       run: |
         echo "ARM_CLIENT_ID is set: $([[ -n "$ARM_CLIENT_ID" ]] && echo "YES" || echo "NO")"
@@ -44,11 +49,12 @@ jobs:
     
     - name: Terraform Validate
       run: terraform validate
+      timeout-minutes: 2
     
     - name: Terraform Plan
-      run: terraform plan
+      run: terraform plan -out=tfplan
+      timeout-minutes: 10
     
-    # Solo aplica en push a main, no en pull requests
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: terraform apply -auto-approve
+      run: terraform apply -auto-approve tfplan
