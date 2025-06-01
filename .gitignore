@@ -14,3 +14,8 @@ terraform.tfstate*
 
 # Otros
 *.exe
+
+.bfg-report/
+SitioWebEstatico.git/
+repo-normal/
+
