@@ -30,11 +30,11 @@ resource "random_integer" "rand" {
 }
 
 resource "azurerm_storage_account" "web" {
-  name                     = "sitioweb${random_integer.rand.result}"
-  resource_group_name      = azurerm_resource_group.web.name
-  location                 = azurerm_resource_group.web.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
+  name                       = "sitioweb${random_integer.rand.result}"
+  resource_group_name        = azurerm_resource_group.web.name
+  location                   = azurerm_resource_group.web.location
+  account_tier               = "Standard"
+  account_replication_type   = "LRS"
   https_traffic_only_enabled = true
 
   static_website {
