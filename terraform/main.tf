@@ -13,14 +13,14 @@ terraform {
 
 provider "azurerm" {
   features {}
-  
+
   # Autenticación explícita con Service Principal
-  use_cli                 = false
-  use_msi                 = false
-  client_id               = var.client_id
-  client_secret           = var.client_secret
-  tenant_id               = var.tenant_id
-  subscription_id         = var.subscription_id
+  use_cli         = false
+  use_msi         = false
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
+  subscription_id = var.subscription_id
 }
 
 resource "azurerm_resource_group" "web" {
