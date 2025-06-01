@@ -2,18 +2,17 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.117.1"
+      version = "~> 3.0"  # En lugar de 3.117.1 exacto
     }
     random = {
       source  = "hashicorp/random"
-      version = "3.7.2"
+      version = "~> 3.0"  # En lugar de 3.7.2 exacto
     }
   }
 }
 
 provider "azurerm" {
   features {}
-
   client_id       = var.client_id
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id
