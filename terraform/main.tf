@@ -2,18 +2,22 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.0"
+      version = "~>3.0"
     }
   }
 }
 
 provider "azurerm" {
   features {}
-  # Las credenciales se toman automáticamente de las variables ARM_*
+  
+  # Configuración explícita para CI/CD
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
+  subscription_id = var.subscription_id
+  
+  # Deshabilitar Azure CLI para CI/CD
+  use_cli = false
 }
 
 resource "azurerm_resource_group" "web" {
@@ -33,7 +37,7 @@ resource "azurerm_storage_account" "web" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
   https_traffic_only_enabled = true
-
+  
   static_website {
     index_document     = "index.html"
     error_404_document = "404.html"
