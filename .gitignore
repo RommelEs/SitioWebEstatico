@@ -1,21 +1,65 @@
 # Terraform
 .terraform/
+.terraform.lock.hcl   # opcional: algunos equipos prefieren commitear este archivo
 terraform.tfstate
+secrets.tfvars      # TU ARCHIVO ESPECÍFICO
 terraform.tfstate.backup
-terraform.tfvars    # si usas variables con valores sensibles
-terraform.tfstate*
+terraform.tfvars      # variables con valores sensibles
+terraform.tfvars.json # versión JSON de tfvars
+*.tfstate
+*.tfstate.*
+*.tfplan              # archivos de plan de terraform
+crash.log
+crash.*.log
+override.tf           # archivos de override locales
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Directorios de módulos
+.terragrunt-cache/
+
+# Azure CLI
+*.azureprofile
+.azure/
+
+# Variables de entorno locales
+.env
+.env.local
+.env.*.local
 
 # Logs y archivos temporales
 *.log
 *.backup
+errored.tfstate
 
-# Azure CLI
-*.azureprofile
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Otros
+# OS específicos
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Otros archivos específicos del proyecto
 *.exe
-
 .bfg-report/
 SitioWebEstatico.git/
 repo-normal/
 
+# Archivos de certificados (por seguridad)
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Respaldos automáticos
+*~
