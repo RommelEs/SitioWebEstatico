@@ -13,14 +13,7 @@ terraform {
 
 provider "azurerm" {
   features {}
-
-  # Autenticación explícita con Service Principal
-  use_cli         = false
-  use_msi         = false
-  client_id       = var.client_id
-  client_secret   = var.client_secret
-  tenant_id       = var.tenant_id
-  subscription_id = var.subscription_id
+  # Las credenciales se toman automáticamente de las variables ARM_*
 }
 
 resource "azurerm_resource_group" "web" {
@@ -70,4 +63,3 @@ resource "azurerm_storage_blob" "style" {
   storage_container_name = "$web"
   type                   = "Block"
   source                 = "${path.module}/../website/style.css"
-}

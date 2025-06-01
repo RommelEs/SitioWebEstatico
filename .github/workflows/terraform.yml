@@ -43,6 +43,14 @@ jobs:
     - name: Terraform Init
       run: terraform init -upgrade
     
+    # Debug: Verificar que las variables estén configuradas
+    - name: Debug Environment Variables
+      run: |
+        echo "ARM_CLIENT_ID is set: $([[ -n "$ARM_CLIENT_ID" ]] && echo "YES" || echo "NO")"
+        echo "ARM_TENANT_ID is set: $([[ -n "$ARM_TENANT_ID" ]] && echo "YES" || echo "NO")"
+        echo "ARM_SUBSCRIPTION_ID is set: $([[ -n "$ARM_SUBSCRIPTION_ID" ]] && echo "YES" || echo "NO")"
+        echo "ARM_CLIENT_SECRET is set: $([[ -n "$ARM_CLIENT_SECRET" ]] && echo "YES" || echo "NO")"
+    
     - name: Terraform Validate
       run: terraform validate
     
