@@ -13,10 +13,14 @@ terraform {
 
 provider "azurerm" {
   features {}
-  client_id       = var.client_id
-  client_secret   = var.client_secret
-  tenant_id       = var.tenant_id
-  subscription_id = var.subscription_id
+  
+  # Autenticación explícita con Service Principal
+  use_cli                 = false
+  use_msi                 = false
+  client_id               = var.client_id
+  client_secret           = var.client_secret
+  tenant_id               = var.tenant_id
+  subscription_id         = var.subscription_id
 }
 
 resource "azurerm_resource_group" "web" {
@@ -30,11 +34,11 @@ resource "random_integer" "rand" {
 }
 
 resource "azurerm_storage_account" "web" {
-  name                       = "sitioweb${random_integer.rand.result}"
-  resource_group_name        = azurerm_resource_group.web.name
-  location                   = azurerm_resource_group.web.location
-  account_tier               = "Standard"
-  account_replication_type   = "LRS"
+  name                     = "sitioweb${random_integer.rand.result}"
+  resource_group_name      = azurerm_resource_group.web.name
+  location                 = azurerm_resource_group.web.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
   https_traffic_only_enabled = true
 
   static_website {
