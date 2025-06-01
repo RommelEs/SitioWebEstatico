@@ -3,6 +3,7 @@
 terraform.tfstate
 terraform.tfstate.backup
 terraform.tfvars    # si usas variables con valores sensibles
+terraform.tfstate*
 
 # Logs y archivos temporales
 *.log
