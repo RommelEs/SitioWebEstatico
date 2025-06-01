@@ -63,3 +63,4 @@ resource "azurerm_storage_blob" "style" {
   storage_container_name = "$web"
   type                   = "Block"
   source                 = "${path.module}/../website/style.css"
+}
