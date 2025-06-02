@@ -1,21 +1,16 @@
-name: Terraform CI/CD
-
+name: Terraform Apply
 on:
-  push:
-    branches: [main]
-    paths: 
-      - 'terraform/**'
-      - 'website/**'
-      - '.github/workflows/terraform.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'terraform/**'
-      - 'website/**'
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "apply" to confirm'
+        required: true
+        default: ''
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'apply'
     
     defaults:
       run:
@@ -48,22 +43,7 @@ jobs:
     
     - name: Terraform Plan
       run: terraform plan -out=tfplan
-      
-    - name: Comment PR with Plan
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { execSync } = require('child_process');
-          const plan = execSync('cd terraform && terraform show -no-color tfplan', { encoding: 'utf-8' });
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `## Terraform Plan\n\`\`\`\n${plan}\n\`\`\``
-          });
     
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: github.event.inputs.confirm == 'apply'  # En lugar de la condición actual
       run: terraform apply -auto-approve tfplan
