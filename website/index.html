@@ -1,13 +1,161 @@
 <!DOCTYPE html>
 <html lang="es">
-  <link rel="stylesheet" href="style.css" />
 <head>
-  <meta charset="UTF-8">
-  <title>Mi Sitio Estático</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto CI/CD - Azure & Terraform</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>¡Bienvenido a mi sitio web estático!</h1>
-  <p>Este sitio ha sido desplegado con Terraform y GitHub Actions en Azure.</p>
+    <header>
+        <div class="container">
+            <h1>Proyecto CI/CD: Sitio Web Estático</h1>
+            <p class="subtitle">Terraform y GitHub Actions en Azure</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="intro">
+            <p>Este proyecto demuestra la implementación de un sitio web estático desplegado automáticamente en Azure mediante Terraform y GitHub Actions. Una práctica completa de DevOps que integra infraestructura como código con despliegue continuo.</p>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                📋 Descripción del Proyecto
+            </div>
+            <div class="section-content">
+                <p>La infraestructura como código (IaC) con Terraform permite crear y gestionar recursos en Azure de forma declarativa y reproducible. Este enfoque garantiza que la infraestructura sea versionable, auditabe y consistente entre diferentes entornos.</p>
+                <p>GitHub Actions automatiza el ciclo de vida completo del despliegue, desde la validación del código hasta la provisión de recursos y el despliegue de la aplicación, creando un pipeline CI/CD robusto y eficiente.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                ⚡ Características
+            </div>
+            <div class="section-content">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h4>🏗️ Infraestructura Declarativa</h4>
+                        <p>Terraform define todos los recursos de Azure mediante código, permitiendo un control total y reproducible de la infraestructura.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🔄 Pipeline CI/CD</h4>
+                        <p>GitHub Actions ejecuta automáticamente pruebas, validaciones y despliegues con cada cambio en el repositorio.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>☁️ Hosting Estático</h4>
+                        <p>Azure Blob Storage o Static Web Apps proporcionan un hosting escalable y económico para sitios estáticos.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>👥 Colaboración Git</h4>
+                        <p>Flujo de trabajo colaborativo mediante repositorio Git con revisiones de código y control de versiones.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                🏛️ Arquitectura
+            </div>
+            <div class="section-content">
+                <p>La arquitectura integra tres componentes principales para crear un pipeline completamente automatizado:</p>
+                
+                <div class="workflow">
+                    <h4 style="text-align: center; margin-bottom: 1rem; color: #2c3e50;">Flujo de Trabajo</h4>
+                    <div class="workflow-steps">
+                        <div class="workflow-step">
+                            <strong>Git Commit</strong>
+                            <p>Desarrollador hace push</p>
+                        </div>
+                        <div class="workflow-arrow">→</div>
+                        <div class="workflow-step">
+                            <strong>GitHub Actions</strong>
+                            <p>Pipeline se ejecuta</p>
+                        </div>
+                        <div class="workflow-arrow">→</div>
+                        <div class="workflow-step">
+                            <strong>Terraform</strong>
+                            <p>Provisiona recursos</p>
+                        </div>
+                        <div class="workflow-arrow">→</div>
+                        <div class="workflow-step">
+                            <strong>Azure</strong>
+                            <p>Aloja la aplicación</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p style="margin-top: 1rem;">Este flujo garantiza que cualquier cambio en el código fuente se despliegue automáticamente tras pasar las validaciones correspondientes, manteniendo la integridad y calidad del sistema.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                🛠️ Tecnologías
+            </div>
+            <div class="section-content">
+                <p>Stack tecnológico utilizado en el proyecto:</p>
+                <div class="tech-list">
+                    <span class="tech-item">Terraform</span>
+                    <span class="tech-item">GitHub Actions</span>
+                    <span class="tech-item">Azure Storage</span>
+                    <span class="tech-item">Azure Static Web Apps</span>
+                    <span class="tech-item">HTML + CSS</span>
+                    <span class="tech-item">Git</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                🤝 Cómo Contribuir
+            </div>
+            <div class="section-content">
+                <p>¡Las contribuciones son bienvenidas! Sigue estos pasos para colaborar:</p>
+                <div class="contribute-steps">
+                    <ol>
+                        <li><strong>Fork</strong> del repositorio principal</li>
+                        <li><strong>Clona</strong> tu fork localmente</li>
+                        <li><strong>Crea</strong> una rama para tu feature</li>
+                        <li><strong>Desarrolla</strong> y prueba tus cambios</li>
+                        <li><strong>Commit</strong> con mensajes descriptivos</li>
+                        <li><strong>Push</strong> a tu repositorio fork</li>
+                        <li><strong>Abre</strong> un Pull Request con descripción detallada</li>
+                    </ol>
+                </div>
+                <p>Todas las contribuciones pasan por revisión de código antes de ser integradas al proyecto principal.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                📧 Contacto y Referencias
+            </div>
+            <div class="section-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <strong>Email</strong>
+                        <span>estudiante.asir@ejemplo.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <strong>LinkedIn</strong>
+                        <span>/in/estudiante-multicloud</span>
+                    </div>
+                    <div class="contact-item">
+                        <strong>GitHub</strong>
+                        <span>github.com/usuario/proyecto-cicd</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Proyecto CI/CD - Máster en Administración de Sistemas Multicloud. Todos los derechos reservados.</p>
+        </div>
+    </footer>
 </body>
 </html>
