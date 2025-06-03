@@ -1,4 +1,10 @@
 terraform {
+  backend "azurerm" {
+    resource_group_name  = "rg-terraform-backend"
+    storage_account_name = "tfbackend1748962482"  # Reemplazar con el nombre que te mostró el script
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
+  }
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
