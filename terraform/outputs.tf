@@ -5,7 +5,7 @@ output "static_website_url" {
 
 output "client_id" {
   description = "Application Client ID para autenticación OIDC"
-  value       = azuread_application.web_auth.client_id
+  value       = var.app_client_id  # Cambiado para usar la variable en lugar del recurso comentado
 }
 
 output "tenant_id" {

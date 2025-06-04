@@ -5,31 +5,21 @@ terraform {
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
     
-    # Forzar usar variables de entorno ARM_* y deshabilitar CLI
-    use_cli = false
-  }
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~>3.0"
-    }
-    azuread = {
-      source  = "hashicorp/azuread"
-      version = "~>2.0"
-    }
+    # Comentar temporalmente para desarrollo local
+    # use_cli = false
   }
 }
 
 provider "azurerm" {
   features {}
   
-  # Las variables de entorno ARM_* se usarán automáticamente
-  use_cli = false
+  # Comentar temporalmente para desarrollo local
+  # use_cli = false
 }
 
 provider "azuread" {
-  # Las variables de entorno ARM_* se usarán automáticamente
-  use_cli = false
+  # Comentar temporalmente para desarrollo local
+  # use_cli = false
 }
 
 resource "random_integer" "rand" {
@@ -81,17 +71,6 @@ resource "azurerm_storage_blob" "style" {
   type                   = "Block"
   source                 = "${path.module}/../website/style.css"
   content_type           = "text/css"
-}
-
-# Variables necesarias para el templatefile
-variable "app_client_id" {
-  description = "Application Client ID"
-  type        = string
-}
-
-variable "tenant_id" {
-  description = "Azure AD Tenant ID"
-  type        = string
 }
 
 # Agregar archivo de configuración de autenticación
