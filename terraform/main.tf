@@ -23,20 +23,13 @@ terraform {
 provider "azurerm" {
   features {}
   
-  # Configuración explícita para CI/CD
-  client_id       = var.client_id
-  client_secret   = var.client_secret
-  tenant_id       = var.tenant_id
-  subscription_id = var.subscription_id
-  
-  # Deshabilitar Azure CLI para CI/CD
+  # Las variables de entorno ARM_* se usarán automáticamente
   use_cli = false
 }
 
 provider "azuread" {
-  client_id     = var.client_id
-  client_secret = var.client_secret
-  tenant_id     = var.tenant_id
+  # Las variables de entorno ARM_* se usarán automáticamente
+  use_cli = false
 }
 
 resource "random_integer" "rand" {
@@ -48,43 +41,6 @@ resource "azurerm_resource_group" "web" {
   name     = "rg-sitioweb-${random_integer.rand.result}"
   location = "West Europe"
 }
-
-# COMENTAMOS ESTAS SECCIONES YA QUE CREAMOS LA APP MANUALMENTE
-# App Registration para OIDC
-# resource "azuread_application" "web_auth" {
-#   display_name = "SitioWebEstatico-Auth-${random_integer.rand.result}"
-#   
-#   single_page_application {
-#     redirect_uris = [
-#       "http://localhost:3000/",
-#       "https://sitioweb${random_integer.rand.result}.z6.web.core.windows.net/"
-#     ]
-#   }
-# 
-#   required_resource_access {
-#     resource_app_id = "00000003-0000-0000-c000-000000000000" # Microsoft Graph
-#     
-#     resource_access {
-#       id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
-#       type = "Scope"
-#     }
-#   }
-# }
-
-# Service Principal para la aplicación
-# resource "azuread_service_principal" "web_auth" {
-#   client_id = azuread_application.web_auth.client_id
-# }
-
-# Federated credential para GitHub Actions
-# resource "azuread_application_federated_identity_credential" "github" {
-#   application_id = azuread_application.web_auth.id
-#   display_name   = "github-actions-main"
-#   description    = "GitHub Actions credential for main branch"
-#   audiences      = ["api://AzureADTokenExchange"]
-#   issuer         = "https://token.actions.githubusercontent.com"
-#   subject        = "repo:${var.github_repo}:ref:refs/heads/main"
-# }
 
 resource "azurerm_storage_account" "web" {
   name                     = "sitioweb${random_integer.rand.result}"
@@ -127,6 +83,17 @@ resource "azurerm_storage_blob" "style" {
   content_type           = "text/css"
 }
 
+# Variables necesarias para el templatefile
+variable "app_client_id" {
+  description = "Application Client ID"
+  type        = string
+}
+
+variable "tenant_id" {
+  description = "Azure AD Tenant ID"
+  type        = string
+}
+
 # Agregar archivo de configuración de autenticación
 resource "azurerm_storage_blob" "auth_config" {
   name                   = "auth-config.js"
@@ -136,8 +103,8 @@ resource "azurerm_storage_blob" "auth_config" {
   content_type           = "application/javascript"
   
   source_content = templatefile("${path.module}/../website/auth-config.js.tpl", {
-    client_id = var.app_client_id  # Usamos una nueva variable para el client ID de la app
-    tenant_id = var.tenant_id
+    client_id = var.app_client_id
+    tenant_id = var.tenant_id  # ❌ Esto también necesita ser definido como variable
     redirect_uri = "${azurerm_storage_account.web.primary_web_endpoint}"
   })
 }

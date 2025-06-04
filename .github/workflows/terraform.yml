@@ -16,35 +16,18 @@ jobs:
         working-directory: ./terraform
     
     env:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      TF_VAR_client_id: ${{ secrets.ARM_CLIENT_ID }}
-      TF_VAR_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-      TF_VAR_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      TF_VAR_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-      TF_VAR_github_repo: RommelEs/SitioWebEstatico
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      # Solo las variables TF_VAR que realmente necesitas
       TF_VAR_app_client_id: ${{ secrets.APP_CLIENT_ID }}
+      TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      TF_VAR_github_repo: RommelEs/SitioWebEstatico
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
-    # STEP DE DEBUG - AGREGAR ESTE
-    - name: Debug Environment Variables
-      run: |
-        echo "Checking ARM variables (masked):"
-        echo "ARM_CLIENT_ID length: ${#ARM_CLIENT_ID}"
-        echo "ARM_CLIENT_SECRET length: ${#ARM_CLIENT_SECRET}"
-        echo "ARM_SUBSCRIPTION_ID length: ${#ARM_SUBSCRIPTION_ID}"
-        echo "ARM_TENANT_ID length: ${#ARM_TENANT_ID}"
-        
-        # Verificar que no estén vacías
-        if [ -z "$ARM_CLIENT_ID" ]; then echo "❌ ARM_CLIENT_ID is empty"; fi
-        if [ -z "$ARM_CLIENT_SECRET" ]; then echo "❌ ARM_CLIENT_SECRET is empty"; fi
-        if [ -z "$ARM_SUBSCRIPTION_ID" ]; then echo "❌ ARM_SUBSCRIPTION_ID is empty"; fi
-        if [ -z "$ARM_TENANT_ID" ]; then echo "❌ ARM_TENANT_ID is empty"; fi
     
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
