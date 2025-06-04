@@ -51,10 +51,10 @@ resource "azuread_application" "web_auth" {
   display_name = "SitioWebEstatico-Auth-${random_integer.rand.result}"
   
   single_page_application {
-    redirect_uris = [
-      "http://localhost:3000",
-      "https://sitioweb${random_integer.rand.result}.z6.web.core.windows.net/"
-    ]
+  redirect_uris = [
+    "http://localhost:3000/",    # Añadir barra diagonal aquí
+    "https://sitioweb${random_integer.rand.result}.z6.web.core.windows.net/"
+  ]
   }
 
   required_resource_access {
