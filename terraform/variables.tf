@@ -24,3 +24,8 @@ variable "github_repo" {
   type        = string
   default     = "RommelEs/SitioWebEstatico"
 }
+
+variable "app_client_id" {
+  description = "Client ID de la aplicación para autenticación OIDC"
+  type        = string
+}
