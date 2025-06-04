@@ -4,6 +4,9 @@ terraform {
     storage_account_name = "tfbackend1749044298"
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
+    
+    # Forzar usar variables de entorno ARM_* y deshabilitar CLI
+    use_cli = false
   }
   required_providers {
     azurerm = {
