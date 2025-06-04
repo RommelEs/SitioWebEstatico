@@ -25,6 +25,7 @@ jobs:
       TF_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
       TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      TF_VAR_github_repo: ${{ github.repository }}
     
     steps:
     - name: Checkout repository
@@ -45,5 +46,5 @@ jobs:
       run: terraform plan -out=tfplan
     
     - name: Terraform Apply
-      if: github.event.inputs.confirm == 'apply'  # En lugar de la condición actual
+      if: github.event.inputs.confirm == 'apply'
       run: terraform apply -auto-approve tfplan

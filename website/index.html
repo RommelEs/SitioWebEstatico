@@ -1,54 +1,231 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Proyecto CI/CD de Rommel</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Proyecto CI/CD de Rommel - Con Autenticación OIDC</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>Sitio web estático colaborativo con Terraform + GitHub Actions</h1>
-    <p>Terraform y GitHub Actions en Azure</p>
-  </header>
+    <header>
+        <div class="header-content">
+            <div class="header-main">
+                <h1>Sitio web estático colaborativo</h1>
+                <p>Terraform y GitHub Actions en Azure - Ahora con autenticación OIDC</p>
+            </div>
+            <div class="auth-section">
+                <div id="loginSection" class="auth-controls">
+                    <button id="loginBtn" class="btn btn-primary">Iniciar Sesión</button>
+                </div>
+                <div id="userSection" class="auth-controls" style="display: none;">
+                    <span id="welcomeMessage" class="welcome-text"></span>
+                    <button id="logoutBtn" class="btn btn-secondary">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </header>
 
-  <main>
-    <section>
-      <h2>Descripción</h2>
-      <p>Este proyecto crea un sitio web estático usando Terraform para gestionar la infraestructura en Azure y GitHub Actions para desplegarlo automáticamente.</p>
-    </section>
+    <main>
+        <section>
+            <h2>Descripción</h2>
+            <p>Este proyecto crea un sitio web estático usando Terraform para gestionar la infraestructura en Azure y GitHub Actions para desplegarlo automáticamente. Ahora incluye autenticación OIDC con Azure AD.</p>
+        </section>
+        
+        <section>
+            <h2>Características</h2>
+            <ul>
+                <li>Infraestructura como código con Terraform</li>
+                <li>Automatización con GitHub Actions</li>
+                <li>Hosting estático en Azure</li>
+                <li>Colaboración mediante Git</li>
+                <li>🔒 Autenticación OIDC con Azure AD</li>
+                <li>🔐 Contenido protegido para usuarios autenticados</li>
+            </ul>
+        </section>
+        
+        <section>
+            <h2>Flujo de trabajo</h2>
+            <p>1. Subo código a GitHub<br />
+               2. GitHub Actions ejecuta el pipeline<br />
+               3. Terraform crea o actualiza recursos en Azure<br />
+               4. Sitio web se publica automáticamente<br />
+               5. ✨ Los usuarios pueden autenticarse con Azure AD</p>
+        </section>
+        
+        <section>
+            <h2>Tecnologías</h2>
+            <p>Terraform, GitHub Actions, Azure, HTML, CSS, Azure AD, OIDC, MSAL.js.</p>
+        </section>
 
-    <section>
-      <h2>Características</h2>
-      <ul>
-        <li>Infraestructura como código con Terraform</li>
-        <li>Automatización con GitHub Actions</li>
-        <li>Hosting estático en Azure</li>
-        <li>Colaboración mediante Git</li>
-      </ul>
-    </section>
+        <section id="protectedContent" class="protected-section" style="display: none;">
+            <h2>🔒 Área Protegida</h2>
+            <p>¡Felicidades! Has iniciado sesión correctamente.</p>
+            <div class="user-info">
+                <h3>Información del Usuario:</h3>
+                <div id="userDetails"></div>
+            </div>
+            <div class="protected-features">
+                <h3>Funcionalidades Exclusivas:</h3>
+                <ul>
+                    <li>📊 Dashboard personalizado del proyecto</li>
+                    <li>📈 Métricas de despliegue</li>
+                    <li>🔧 Configuración avanzada de Terraform</li>
+                    <li>📝 Logs detallados de GitHub Actions</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section>
+            <h2>GitHub</h2>
+            <p>Repositorio: https://github.com/RommelEs/SitioWebEstatico</p>
+        </section>
+    </main>
 
-    <section>
-      <h2>Flujo de trabajo</h2>
-      <p>1. Subo código a GitHub<br />
-         2. GitHub Actions ejecuta el pipeline<br />
-         3. Terraform crea o actualiza recursos en Azure<br />
-         4. Sitio web se publica automáticamente</p>
-    </section>
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Sitio Web Estático con OIDC. Proyecto CI/CD con Terraform.</p>
+        </div>
+    </footer>
 
-    <section>
-      <h2>Tecnologías</h2>
-      <p>Terraform, GitHub Actions, Azure, HTML y CSS.</p>
-    </section>
+    <!-- Scripts de MSAL -->
+    <script src="https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js"></script>
+    <script src="auth-config.js"></script>
+    <script>
+        let username = "";
 
-    <section>
-      <h2>GitHub</h2>
-      <p>Repositorio: https://github.com/RommelEs/SitioWebEstatico</p>
-    </section>
-  </main>
+        // Elementos del DOM
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginSection = document.getElementById('loginSection');
+        const userSection = document.getElementById('userSection');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const protectedContent = document.getElementById('protectedContent');
+        const userDetails = document.getElementById('userDetails');
 
-  <footer>
-    <p>© 2024 Proyecto CI/CD - Máster Administración de Sistema Multi-cloud - Rommel</p>
-  </footer>
+        // Event listeners
+        loginBtn.addEventListener('click', signIn);
+        logoutBtn.addEventListener('click', signOut);
+
+        // Función de login
+        function signIn() {
+            myMSALObj.loginPopup(loginRequest)
+                .then(handleResponse)
+                .catch(error => {
+                    console.error('Error en login:', error);
+                    alert('Error al iniciar sesión: ' + error.message);
+                });
+        }
+
+        // Función de logout
+        function signOut() {
+            const logoutRequest = {
+                account: myMSALObj.getAccountByUsername(username)
+            };
+
+            myMSALObj.logoutPopup(logoutRequest)
+                .then(() => {
+                    updateUI();
+                })
+                .catch(error => {
+                    console.error('Error en logout:', error);
+                });
+        }
+
+        // Manejar respuesta de autenticación
+        function handleResponse(response) {
+            if (response !== null) {
+                username = response.account.username;
+                updateUI();
+                getTokenPopup(loginRequest)
+                    .then(response => {
+                        callMSGraph(response.accessToken, updateUserInfo);
+                    })
+                    .catch(error => {
+                        console.error('Error obteniendo token:', error);
+                    });
+            } else {
+                selectAccount();
+            }
+        }
+
+        // Obtener token
+        function getTokenPopup(request) {
+            request.account = myMSALObj.getAccountByUsername(username);
+            return myMSALObj.acquireTokenSilent(request)
+                .catch(error => {
+                    console.warn("Error obteniendo token silencioso");
+                    return myMSALObj.acquireTokenPopup(request);
+                });
+        }
+
+        // Seleccionar cuenta si hay múltiples
+        function selectAccount() {
+            const currentAccounts = myMSALObj.getAllAccounts();
+            if (currentAccounts.length < 1) {
+                return;
+            } else if (currentAccounts.length > 1) {
+                // Si hay múltiples cuentas, usar la primera
+                username = currentAccounts[0].username;
+                updateUI();
+            } else if (currentAccounts.length === 1) {
+                username = currentAccounts[0].username;
+                updateUI();
+            }
+        }
+
+        // Actualizar interfaz de usuario
+        function updateUI() {
+            const account = myMSALObj.getAccountByUsername(username);
+            if (account) {
+                loginSection.style.display = 'none';
+                userSection.style.display = 'block';
+                protectedContent.style.display = 'block';
+                welcomeMessage.textContent = `Hola, ${account.name || account.username}`;
+            } else {
+                loginSection.style.display = 'block';
+                userSection.style.display = 'none';
+                protectedContent.style.display = 'none';
+                welcomeMessage.textContent = '';
+                userDetails.innerHTML = '';
+            }
+        }
+
+        // Llamar a Microsoft Graph API
+        function callMSGraph(accessToken, callback) {
+            const headers = new Headers();
+            const bearer = `Bearer ${accessToken}`;
+            headers.append("Authorization", bearer);
+
+            const options = {
+                method: "GET",
+                headers: headers
+            };
+
+            fetch("https://graph.microsoft.com/v1.0/me", options)
+                .then(response => response.json())
+                .then(response => callback(response))
+                .catch(error => console.error('Error llamando a Graph API:', error));
+        }
+
+        // Actualizar información del usuario
+        function updateUserInfo(graphResponse) {
+            userDetails.innerHTML = `
+                <p><strong>Nombre:</strong> ${graphResponse.displayName || 'N/A'}</p>
+                <p><strong>Email:</strong> ${graphResponse.mail || graphResponse.userPrincipalName || 'N/A'}</p>
+                <p><strong>ID:</strong> ${graphResponse.id || 'N/A'}</p>
+                <p><strong>Cargo:</strong> ${graphResponse.jobTitle || 'N/A'}</p>
+            `;
+        }
+
+        // Inicializar la aplicación
+        myMSALObj.handleRedirectPromise()
+            .then(handleResponse)
+            .catch(error => {
+                console.error('Error manejando redirect:', error);
+            });
+
+        // Verificar si ya hay una sesión activa
+        selectAccount();
+    </script>
 </body>
 </html>

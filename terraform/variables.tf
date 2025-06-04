@@ -18,3 +18,9 @@ variable "subscription_id" {
   description = "Subscription ID de Azure"
   type        = string
 }
+
+variable "github_repo" {
+  description = "GitHub repository in format 'owner/repo-name'"
+  type        = string
+  default     = "RommelEs/SitioWebEstatico"
+}

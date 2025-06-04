@@ -18,8 +18,69 @@ header {
   text-align: center;
 }
 
+/* Estilos para el header con autenticación */
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.header-main {
+  flex: 1;
+  text-align: left;
+}
+
+.auth-section {
+  flex-shrink: 0;
+}
+
 header h1 {
   margin-bottom: 5px;
+}
+
+/* Estilos para botones de autenticación */
+.auth-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #218838;
+}
+
+.btn-secondary {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #c82333;
+}
+
+.welcome-text {
+  color: #ffffff;
+  font-weight: bold;
+  margin-right: 10px;
 }
 
 main {
@@ -45,9 +106,94 @@ ul {
   padding-left: 20px;
 }
 
+/* Estilos para contenido protegido */
+.protected-section {
+  background-color: #f8f9fa;
+  border: 2px solid #28a745;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.protected-section h2 {
+  color: #28a745;
+  margin-bottom: 15px;
+}
+
+.user-info {
+  background-color: #e9ecef;
+  padding: 15px;
+  border-radius: 6px;
+  margin: 15px 0;
+}
+
+.user-info h3 {
+  color: #005f99;
+  margin-bottom: 10px;
+}
+
+#userDetails {
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+  border-left: 4px solid #28a745;
+}
+
+#userDetails p {
+  margin: 5px 0;
+  padding: 2px 0;
+}
+
+.protected-features {
+  margin-top: 15px;
+}
+
+.protected-features h3 {
+  color: #005f99;
+  margin-bottom: 10px;
+}
+
+.protected-features ul {
+  background-color: white;
+  padding: 15px 20px;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+}
+
+.protected-features li {
+  margin: 8px 0;
+  color: #333;
+}
+
 footer {
   text-align: center;
   color: #555;
   margin-top: 30px;
   font-size: 0.9em;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .header-main {
+    text-align: center;
+  }
+  
+  body {
+    padding: 10px;
+  }
+  
+  main {
+    padding: 12px;
+    margin: 15px auto;
+  }
+  
+  .auth-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
