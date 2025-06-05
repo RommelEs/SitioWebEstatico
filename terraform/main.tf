@@ -4,22 +4,14 @@ terraform {
     storage_account_name = "tfbackend1749141799"
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
-    
-    # Comentar temporalmente para desarrollo local
-    # use_cli = false
   }
 }
 
 provider "azurerm" {
   features {}
-  
-  # Comentar temporalmente para desarrollo local
-  # use_cli = false
 }
 
 provider "azuread" {
-  # Comentar temporalmente para desarrollo local
-  # use_cli = false
 }
 
 resource "random_integer" "rand" {
@@ -71,19 +63,4 @@ resource "azurerm_storage_blob" "style" {
   type                   = "Block"
   source                 = "${path.module}/../website/style.css"
   content_type           = "text/css"
-}
-
-# Agregar archivo de configuración de autenticación
-resource "azurerm_storage_blob" "auth_config" {
-  name                   = "auth-config.js"
-  storage_account_name   = azurerm_storage_account.web.name
-  storage_container_name = "$web"
-  type                   = "Block"
-  content_type           = "application/javascript"
-  
-  source_content = templatefile("${path.module}/../website/auth-config.js.tpl", {
-    client_id = var.app_client_id
-    tenant_id = var.tenant_id  # ❌ Esto también necesita ser definido como variable
-    redirect_uri = "${azurerm_storage_account.web.primary_web_endpoint}"
-  })
 }

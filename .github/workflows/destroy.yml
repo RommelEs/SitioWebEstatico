@@ -1,273 +1,158 @@
-name: Terraform Destroy
+name: Terraform Destroy Infrastructure
 
 on:
   workflow_dispatch:
     inputs:
-      confirm:
-        description: 'Type "destroy" to confirm deletion of all resources'
-        required: true
-        default: ''
       environment:
         description: 'Environment to destroy'
-        required: false
+        required: true
+        default: 'development'
         type: choice
         options:
           - development
-          - staging  
+          - staging
           - production
-        default: 'development'
-      skip_plan:
-        description: 'Skip destroy plan preview (faster execution)'
-        type: boolean
-        default: false
-      force_unlock:
-        description: 'Force unlock Terraform state if locked'
-        type: boolean
-        default: false
-
-env:
-  TF_IN_AUTOMATION: true
-  TF_LOG_PROVIDER: WARN  # Reduce logs verbosity
+      confirm_destroy:
+        description: 'Type "DESTROY" to confirm'
+        required: true
+        type: string
 
 jobs:
   destroy:
     runs-on: ubuntu-latest
-    timeout-minutes: 45  # Aumentado para operaciones complejas
-    
-    # Validaciones más estrictas
-    if: |
-      github.event.inputs.confirm == 'destroy' && 
-      github.actor != '' &&
-      contains(fromJSON('["development", "staging", "production"]'), github.event.inputs.environment)
     
     defaults:
       run:
         working-directory: ./terraform
     
-    # Configurar entorno específico (opcional)
-    # environment: 
-    #   name: ${{ github.event.inputs.environment }}
-    #   url: https://portal.azure.com
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      TF_VAR_app_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+      TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      TF_VAR_github_repo: RommelEs/SitioWebEstatico
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 1  # Solo último commit para destroy
-    
     - name: Validate execution context
       run: |
-        echo "🔍 Validating execution context..."
-        echo "Repository: ${{ github.repository }}"
-        echo "Actor: ${{ github.actor }}"
+        echo "🚨 INFRASTRUCTURE DESTROY REQUESTED"
         echo "Environment: ${{ github.event.inputs.environment }}"
-        echo "Ref: ${{ github.ref }}"
+        echo "Requested by: ${{ github.actor }}"
+        echo "Repository: ${{ github.repository }}"
         
-        # Prevenir ejecución accidental en production
-        if [[ "${{ github.event.inputs.environment }}" == "production" && "${{ github.ref }}" != "refs/heads/main" ]]; then
-          echo "❌ Production destroy only allowed from main branch"
+        # Validate confirmation input
+        if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
+          echo "❌ Confirmation failed. You must type 'DESTROY' exactly."
           exit 1
         fi
-    
+        
+        echo "✅ Confirmation validated"
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
     - name: Azure Login
-      uses: azure/login@v2
+      uses: azure/login@v1
       with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        enable-AzPSSession: false
-    
+        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+
     - name: Verify Azure connection
       run: |
-        echo "🔗 Verifying Azure connection..."
-        az account show --output table
-        az group list --query "[?starts_with(name, 'rg-')] | [0:3]" --output table || true
-    
+        echo "🔍 Verifying Azure connection..."
+        az account show
+        az account list --output table
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: ~1.9.0  # Pin a version específica
-        terraform_wrapper: false   # Para mejor output parsing
-    
-    - name: Cache Terraform providers
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.terraform.d/plugin-cache
-          .terraform/providers
-        key: terraform-providers-${{ runner.os }}-${{ hashFiles('**/.terraform.lock.hcl') }}
-        restore-keys: |
-          terraform-providers-${{ runner.os }}-
-    
+        terraform_version: 'latest'
+        terraform_wrapper: false
+
+    - name: Verify Terraform installation
+      run: |
+        echo "🔍 Verifying Terraform installation..."
+        terraform version
+
     - name: Terraform Init
       run: |
-        echo "🚀 Initializing Terraform..."
-        terraform init \
-          -input=false \
-          -backend-config="resource_group_name=rg-terraform-backend" \
-          -backend-config="storage_account_name=tfbackend1749141799" \
-          -backend-config="container_name=tfstate" \
-          -backend-config="key=terraform.tfstate"
-      timeout-minutes: 10
-    
-    - name: Handle state lock (conditional)
-      if: github.event.inputs.force_unlock == 'true'
-      run: |
-        echo "🔓 Force unlocking Terraform state..."
-        terraform force-unlock -force ${{ secrets.TF_LOCK_ID }} || true
-      continue-on-error: true
-      timeout-minutes: 2
-    
+        echo "🔧 Initializing Terraform..."
+        terraform init
+        
     - name: Terraform Validate
       run: |
         echo "✅ Validating Terraform configuration..."
         terraform validate
-        terraform fmt -check=true || echo "⚠️ Code formatting issues detected"
-      timeout-minutes: 3
-    
+
     - name: Check current state
       run: |
-        echo "📋 Checking current infrastructure state..."
-        terraform show -json | jq -r '.values.root_module.resources[]?.address // empty' | head -10 || echo "No resources found"
-        echo "Total resources: $(terraform state list | wc -l)"
-      continue-on-error: true
-      timeout-minutes: 5
-    
+        echo "🔍 Checking current Terraform state..."
+        terraform show
+        echo ""
+        echo "📋 Resources in state:"
+        terraform state list
+
     - name: Generate and show destroy plan
-      if: github.event.inputs.skip_plan != 'true'
       run: |
-        echo "🔍 Generating destroy plan..."
-        terraform plan -destroy \
-          -var="app_client_id=oidc-will-be-configured" \
-          -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
-          -var="github_repo=${{ github.repository }}" \
-          -lock=false \
-          -input=false \
-          -compact-warnings \
-          -no-color \
-          -out=destroy.tfplan
-        
-        echo "📊 Destroy plan summary:"
-        terraform show -json destroy.tfplan | jq -r '.resource_changes[]? | select(.change.actions[] == "delete") | .address' | wc -l | xargs echo "Resources to destroy:" || echo "Plan generated successfully"
-      continue-on-error: true
-      timeout-minutes: 10
-    
+        echo "📋 Generating destroy plan..."
+        terraform plan -destroy -out=destroy.tfplan
+        echo ""
+        echo "🚨 RESOURCES TO BE DESTROYED:"
+        terraform show destroy.tfplan
+
     - name: Final confirmation and delay
       run: |
-        echo "⚠️  FINAL CONFIRMATION - ABOUT TO DESTROY ALL RESOURCES"
-        echo "🌍 Environment: ${{ github.event.inputs.environment }}"
-        echo "👤 Initiated by: ${{ github.actor }}"
-        echo "📅 Repository: ${{ github.repository }}"
-        echo "🔗 Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        echo "⏰ Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-        echo ""
-        
-        if [ "${{ github.event.inputs.skip_plan }}" == "true" ]; then
-          echo "⚡ Plan preview was skipped - DESTROYING WITHOUT PREVIEW"
-        fi
-        
-        echo "🔥 Proceeding with IRREVERSIBLE destruction in 10 seconds..."
-        for i in {10..1}; do
-          echo "Destroying in $i seconds..."
-          sleep 1
-        done
-        echo "🚀 Starting destruction NOW!"
-    
+        echo "⚠️  FINAL WARNING: This will destroy all infrastructure!"
+        echo "Environment: ${{ github.event.inputs.environment }}"
+        echo "Waiting 30 seconds before proceeding..."
+        sleep 30
+        echo "🚀 Proceeding with destruction..."
+
     - name: Terraform Destroy
       run: |
-        echo "🔥 Starting resource destruction..."
-        terraform destroy -auto-approve \
-          -var="app_client_id=oidc-will-be-configured" \
-          -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
-          -var="github_repo=${{ github.repository }}" \
-          -input=false \
-          -lock-timeout=10m \
-          -parallelism=5 \
-          -refresh=true
-      timeout-minutes: 25
-    
+        echo "💥 Executing Terraform destroy..."
+        terraform apply -auto-approve destroy.tfplan
+        
     - name: Verify destruction completion
       run: |
         echo "🔍 Verifying destruction completion..."
-        
-        # Check if any resources remain
-        remaining_resources=$(terraform state list | wc -l)
-        echo "Remaining resources in state: $remaining_resources"
-        
-        if [ $remaining_resources -gt 0 ]; then
-          echo "⚠️ Some resources may still exist:"
-          terraform state list
-        else
-          echo "✅ All resources successfully removed from state"
-        fi
-        
-        # Check Azure resources (optional)
-        echo "🔍 Checking for remaining Azure resources..."
-        az resource list --resource-group "rg-${{ github.event.inputs.environment }}-*" --output table || echo "No resource groups found"
-      continue-on-error: true
-      timeout-minutes: 5
-    
+        terraform state list || echo "✅ State is empty - destruction completed"
+
     - name: Final success confirmation
       run: |
-        echo "🎉 DESTRUCTION COMPLETED SUCCESSFULLY"
-        echo "🌍 Environment: ${{ github.event.inputs.environment }}"
-        echo "👤 Destroyed by: ${{ github.actor }}"
-        echo "⏰ Completed at: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-        echo "🔗 Run details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        
-        # Notify via webhook if configured
-        if [ -n "${{ secrets.TEAMS_WEBHOOK_URL }}" ]; then
-          curl -X POST "${{ secrets.TEAMS_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"text\":\"✅ Terraform Destroy completed for ${{ github.event.inputs.environment }} by ${{ github.actor }}\"}" || true
-        fi
-    
+        echo "✅ INFRASTRUCTURE DESTROY COMPLETED SUCCESSFULLY"
+        echo "Environment: ${{ github.event.inputs.environment }}"
+        echo "Destroyed by: ${{ github.actor }}"
+        echo "Timestamp: $(date)"
+
     - name: Cleanup and diagnostics on failure
       if: failure()
       run: |
         echo "❌ DESTROY PROCESS FAILED"
         echo "🔍 Performing failure diagnostics..."
         
-        # Show current state
         echo "Current Terraform state:"
-        terraform show || true
+        terraform state list || echo "Unable to list state"
         
-        # Show any remaining resources
+        echo ""
         echo "Resources still in state:"
-        terraform state list || true
-        
-        # Check for locks
-        echo "Checking for state locks..."
-        terraform init -input=false > /dev/null 2>&1 || echo "Init failed - possible lock"
-        
-        # Azure resource check
-        echo "Checking Azure resources:"
-        az resource list --output table | head -20 || true
+        terraform show || echo "Unable to show state"
         
         echo ""
         echo "💡 RECOVERY SUGGESTIONS:"
         echo "1. Check the logs above for specific error messages"
         echo "2. Manually review Azure portal for stuck resources"
-        echo "3. Consider using 'force_unlock' option if state is locked"
-        echo "4. Run individual 'terraform destroy -target=RESOURCE' for problematic resources"
-        echo "5. Contact team if persistent issues occur"
-        
-        # Save diagnostic info
-        {
-          echo "Failure diagnostics for run ${{ github.run_id }}"
-          echo "Environment: ${{ github.event.inputs.environment }}"
-          echo "Actor: ${{ github.actor }}"
-          echo "Timestamp: $(date)"
-          terraform state list 2>/dev/null || echo "Could not list state"
-        } > destroy_failure_diagnostics.txt || true
-      continue-on-error: true
-    
+        echo "3. Run individual 'terraform destroy -target=RESOURCE' for problematic resources"
+        echo "4. Contact team if persistent issues occur"
+
     - name: Upload failure diagnostics
       if: failure()
       uses: actions/upload-artifact@v4
       with:
         name: destroy-failure-diagnostics-${{ github.event.inputs.environment }}-${{ github.run_id }}
-        path: terraform/destroy_failure_diagnostics.txt
+        path: |
+          terraform/terraform.tfstate*
+          terraform/.terraform/
+          terraform/destroy.tfplan
         retention-days: 30
-      continue-on-error: true

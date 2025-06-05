@@ -1,4 +1,5 @@
 name: Terraform Apply
+
 on:
   workflow_dispatch:
     inputs:
@@ -6,6 +7,7 @@ on:
         description: 'Type "apply" to confirm'
         required: true
         default: ''
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -20,9 +22,6 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      # Solo las variables TF_VAR que realmente necesitas
-      TF_VAR_app_client_id: ${{ secrets.APP_CLIENT_ID }}
-      TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       TF_VAR_github_repo: RommelEs/SitioWebEstatico
     
     steps:

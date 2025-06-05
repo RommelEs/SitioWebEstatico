@@ -3,12 +3,12 @@ output "static_website_url" {
   value       = azurerm_storage_account.web.primary_web_endpoint
 }
 
-output "client_id" {
-  description = "Application Client ID para autenticación OIDC"
-  value       = var.app_client_id  # Cambiado para usar la variable en lugar del recurso comentado
+output "resource_group_name" {
+  description = "Nombre del grupo de recursos creado"
+  value       = azurerm_resource_group.web.name
 }
 
-output "tenant_id" {
-  description = "Tenant ID de Azure AD"
-  value       = var.tenant_id
+output "storage_account_name" {
+  description = "Nombre de la cuenta de almacenamiento"
+  value       = azurerm_storage_account.web.name
 }
