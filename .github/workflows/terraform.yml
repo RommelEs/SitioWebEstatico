@@ -1,5 +1,4 @@
 name: Terraform Apply
-
 on:
   workflow_dispatch:
     inputs:
@@ -31,10 +30,13 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 'latest'
+        terraform_version: '1.6.6'
     
     - name: Terraform Init
       run: terraform init
+    
+    - name: Terraform Format Check
+      run: terraform fmt -check
     
     - name: Terraform Validate
       run: terraform validate
@@ -42,6 +44,41 @@ jobs:
     - name: Terraform Plan
       run: terraform plan -out=tfplan
     
+    - name: Show Terraform Plan
+      run: terraform show tfplan
+    
     - name: Terraform Apply
       if: github.event.inputs.confirm == 'apply'
       run: terraform apply -auto-approve tfplan
+    
+    - name: Get Storage Account Info
+      id: storage_info
+      run: |
+        STORAGE_ACCOUNT=$(terraform output -raw screenshots_storage_account_name)
+        STORAGE_KEY=$(terraform output -raw screenshots_storage_account_primary_access_key)
+        echo "::add-mask::$STORAGE_KEY"
+        echo "storage_account=$STORAGE_ACCOUNT" >> $GITHUB_OUTPUT
+        echo "storage_key=$STORAGE_KEY" >> $GITHUB_OUTPUT
+    
+    - name: Install Azure CLI
+      run: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    
+    - name: Upload Screenshots to Storage
+      if: hashFiles('screenshots/**') != ''
+      run: |
+        az storage blob upload-batch \
+          --account-name ${{ steps.storage_info.outputs.storage_account }} \
+          --account-key ${{ steps.storage_info.outputs.storage_key }} \
+          --destination screenshots \
+          --source ../screenshots/ \
+          --pattern "*.png" \
+          --overwrite
+        
+        az storage blob upload-batch \
+          --account-name ${{ steps.storage_info.outputs.storage_account }} \
+          --account-key ${{ steps.storage_info.outputs.storage_key }} \
+          --destination screenshots \
+          --source ../screenshots/ \
+          --pattern "*.jpg" \
+          --overwrite
