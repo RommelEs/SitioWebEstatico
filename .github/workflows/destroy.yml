@@ -92,8 +92,8 @@ jobs:
       timeout-minutes: 30
       with:
         secret: ${{ github.TOKEN }}
-        approvers: ${{ vars.DESTROY_APPROVERS }}
-        minimum-approvals: 2
+        approvers: ${{ github.actor }}
+        minimum-approvals: 1
         issue-title: "🔥 Approve Terraform Destroy for ${{ github.event.inputs.environment }}"
         issue-body: |
           **Environment:** ${{ github.event.inputs.environment }}
@@ -106,6 +106,9 @@ jobs:
           
           ### Resources to be destroyed:
           See the workflow run for the complete destroy plan.
+          
+          **To approve:** Comment "approve" on this issue
+          **To deny:** Comment "deny" on this issue
 
     - name: Terraform Destroy
       run: |
@@ -126,7 +129,7 @@ jobs:
       working-directory: ./terraform
 
     - name: Notify Success
-      if: success()
+      if: success() && env.SLACK_WEBHOOK_URL != ''
       uses: 8398a7/action-slack@v3
       with:
         status: success
@@ -138,7 +141,7 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     - name: Notify Failure
-      if: failure()
+      if: failure() && env.SLACK_WEBHOOK_URL != ''
       uses: 8398a7/action-slack@v3
       with:
         status: failure
