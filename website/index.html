@@ -1,231 +1,279 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Proyecto CI/CD de Rommel - Con Autenticación OIDC</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Proyecto Azure - 15 minutos</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <div class="header-main">
-                <h1>Sitio web estático colaborativo</h1>
-                <p>Terraform y GitHub Actions en Azure - Ahora con autenticación OIDC</p>
-            </div>
-            <div class="auth-section">
-                <div id="loginSection" class="auth-controls">
-                    <button id="loginBtn" class="btn btn-primary">Iniciar Sesión</button>
+    <div class="canvas-container">
+        <div class="header">
+            <h1>🚀 Automatización DevOps en Azure</h1>
+            <div class="subtitle">Sitio Web Estático con Terraform y GitHub Actions</div>
+            <div class="author">Rommel Estimada Mantilla - Centro Tajamar</div>
+            <div class="duration">⏱️ Presentación: 15 minutos</div>
+        </div>
+
+        <div class="timeline-grid">
+            <!-- BLOQUE 1: 0-2 minutos -->
+            <div class="timeline-item intro">
+                <div class="time-badge">0-2 min</div>
+                <div class="section-title">
+                    <span class="section-icon">🌟</span>
+                    Introducción
                 </div>
-                <div id="userSection" class="auth-controls" style="display: none;">
-                    <span id="welcomeMessage" class="welcome-text"></span>
-                    <button id="logoutBtn" class="btn btn-secondary">Cerrar Sesión</button>
+                <div class="section-content">
+                    <div class="subsection">
+                        <h4>Presentación Personal</h4>
+                        <p><strong>Nombre:</strong> Rommel Estimada Mantilla</p>
+                        <p><strong>Centro:</strong> Tajamar</p>
+                    </div>
+                    <div class="subsection">
+                        <h4>Proyecto</h4>
+                        <p><strong>Título:</strong> Sitio Web Estático en Azure con Terraform y GitHub Actions</p>
+                        <p><strong>Objetivo:</strong> Automatización del despliegue usando <span class="highlight">IaC</span> y <span class="highlight">CI/CD</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 2: 2-4 minutos -->
+            <div class="timeline-item objectives">
+                <div class="time-badge">2-4 min</div>
+                <div class="section-title">
+                    <span class="section-icon">🎯</span>
+                    Objetivos y Tecnologías
+                </div>
+                <div class="section-content">
+                    <div class="subsection">
+                        <h4>Objetivos Principales</h4>
+                        <ul class="objective-list">
+                            <li>Automatizar despliegue con Terraform</li>
+                            <li>Orquestar CI/CD con GitHub Actions</li>
+                            <li>Aplicar buenas prácticas DevOps</li>
+                        </ul>
+                    </div>
+                    <div class="subsection">
+                        <h4>Stack Tecnológico</h4>
+                        <div class="tech-grid">
+                            <div class="tech-item">Terraform</div>
+                            <div class="tech-item">GitHub Actions</div>
+                            <div class="tech-item">Azure Storage</div>
+                            <div class="tech-item">Azure CLI</div>
+                            <div class="tech-item">HTML/CSS</div>
+                            <div class="tech-item">VS Code</div>
+                            <div class="tech-item">PowerShell</div>
+                            <div class="tech-item">MSAL.js</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 3: 4-7 minutos -->
+            <div class="timeline-item development">
+                <div class="time-badge">4-7 min</div>
+                <div class="section-title">
+                    <span class="section-icon">🏗️</span>
+                    Desarrollo y Estructura
+                </div>
+                <div class="section-content">
+                    <div class="subsection">
+                        <h4>Estructura del Proyecto</h4>
+                        <div class="file-structure">
+                            <div class="folder">📂 .github/workflows/</div>
+                            <div class="file">└── terraform.yml, destroy.yml</div>
+                            <div class="folder">📂 terraform/</div>
+                            <div class="file">└── main.tf, variables.tf, outputs.tf</div>
+                            <div class="folder">📂 website/</div>
+                            <div class="file">└── index.html, style.css, auth-config.js.tpl</div>
+                            <div class="file">📄 backend-SitioWeb.sh</div>
+                            <div class="file">📄 .gitignore</div>
+                            <div class="file">📄 secrets.tfvars (local)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- NUEVA SUBSECCIÓN PARA IMÁGENES -->
+                    <div class="subsection image-subsection">
+                        <h4>📸 Vista del Proyecto en VS Code</h4>
+                        <div class="single-image">
+                            <img src="vscode-structure.png" alt="Estructura del proyecto en VS Code">
+                            <div class="image-caption">Organización de archivos y directorios del proyecto</div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>Infraestructura con Terraform</h4>
+                        <p>Recursos: <span class="highlight">grupo de recursos</span>, <span class="highlight">storage account</span>, <span class="highlight">blobs estáticos</span></p>
+                        <p>Secrets sensibles gestionados con <span class="highlight">secrets.tfvars</span> (local)</p>
+                    </div>
+                    
+                    <!-- NUEVA SUBSECCIÓN PARA CÓDIGO TERRAFORM -->
+                    <div class="subsection image-subsection">
+                        <h4>📸 Código Terraform</h4>
+                        <div class="single-image">
+                            <img src="terraform-code.png" alt="Código Terraform main.tf">
+                            <div class="image-caption">Configuración de infraestructura como código</div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>Pipeline CI/CD</h4>
+                        <p>Workflow automatizado: <span class="highlight">init → validate → plan → apply</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 4: 7-10 minutos -->
+            <div class="timeline-item results">
+                <div class="time-badge">7-10 min</div>
+                <div class="section-title">
+                    <span class="section-icon">⚡</span>
+                    Pipeline y Resultados
+                </div>
+                <div class="section-content">
+                    <div class="subsection">
+                        <h4>Proceso de Despliegue</h4>
+                        <ul class="objective-list">
+                            <li>Configuración de repositorio GitHub</li>
+                            <li>Secrets y variables de entorno</li>
+                            <li>Trigger automático en push a main</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- NUEVA SUBSECCIÓN PARA GITHUB ACTIONS -->
+                    <div class="subsection image-subsection">
+                        <h4>📸 Pipeline en Acción</h4>
+                        <div class="demo-images">
+                            <div>
+                                <img src="github-actions-running.png" alt="GitHub Actions ejecutándose">
+                                <div class="image-caption">Workflow de GitHub Actions en ejecución</div>
+                            </div>
+                            <div>
+                                <img src="terraform-plan-output.png" alt="Output de terraform plan">
+                                <div class="image-caption">Resultado del comando terraform plan</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>Resolución de Problemas</h4>
+                        <p><span class="highlight">Problema común:</span> Error en workflow por falta de secrets</p>
+                        <p><span class="highlight">Solución:</span> Configuración correcta en GitHub Secrets and Variables</p>
+                        <p><span class="highlight">Otros errores:</span> Permisos de Azure, configuración de backend</p>
+                    </div>
+                    
+                    <!-- NUEVA SUBSECCIÓN PARA AZURE PORTAL -->
+                    <div class="subsection image-subsection">
+                        <h4>📸 Recursos Desplegados</h4>
+                        <div class="demo-images">
+                            <div>
+                                <img src="azure-portal-resources.png" alt="Recursos en Azure Portal">
+                                <div class="image-caption">Recursos creados en Azure Portal</div>
+                            </div>
+                            <div>
+                                <img src="website-live.png" alt="Sitio web funcionando">
+                                <div class="image-caption">Sitio web estático en funcionamiento</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>Resultado Final</h4>
+                        <div class="status-badge status-success">✅ Infraestructura repetible y escalable</div>
+                        <div class="status-badge status-success" style="margin-left: 10px;">✅ URL pública generada automáticamente</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 5: 10-12 minutos -->
+            <div class="timeline-item improvements">
+                <div class="time-badge">10-12 min</div>
+                <div class="section-title">
+                    <span class="section-icon">🔧</span>
+                    Mejoras y Autenticación
+                </div>
+                <div class="section-content">
+                    <div class="subsection">
+                        <h4>Mejoras Implementadas</h4>
+                        <ul class="objective-list">
+                            <li>Backend remoto con <span class="highlight">backend-SitioWeb.sh</span></li>
+                            <li>Workflows separados (deploy/destroy)</li>
+                            <li>Gestión centralizada del estado Terraform</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- NUEVA SUBSECCIÓN PARA BACKEND REMOTO -->
+                    <div class="subsection image-subsection">
+                        <h4>📸 Backend Remoto Configurado</h4>
+                        <div class="single-image">
+                            <img src="terraform-backend.png" alt="Configuración del backend remoto">
+                            <div class="image-caption">Estado de Terraform almacenado remotamente</div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>Autenticación OIDC</h4>
+                        <p>Integración con <span class="highlight">Azure AD</span> y <span class="highlight">MSAL.js</span></p>
+                        <p>Modificaciones: <span class="highlight">auth-config.js.tpl</span>, <span class="highlight">index.html</span>, configuración Terraform</p>
+                        <p><strong>Limitación técnica:</strong> Completado manualmente desde Azure Portal</p>
+                        <div class="status-badge status-partial">⚠️ Implementación Parcial - Funcional</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 6: 12-15 minutos -->
+            <div class="timeline-item conclusion">
+                <div class="time-badge">12-15 min</div>
+                <div class="section-title">
+                    <span class="section-icon">🎉</span>
+                    Conclusiones y Demo
+                </div>
+                <div class="section-content">
+                    <div class="subsection">
+                        <h4>Logros Alcanzados</h4>
+                        <ul class="objective-list">
+                            <li>Proyecto DevOps completo (IaC + CI/CD)</li>
+                            <li>Infraestructura escalable y repetible</li>
+                            <li>Aplicación de buenas prácticas</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- NUEVA SUBSECCIÓN PARA DEMO FINAL -->
+                    <div class="subsection image-subsection">
+                        <h4>📸 Resultado Final</h4>
+                        <div class="demo-images">
+                            <div>
+                                <img src="final-website.png" alt="Sitio web final">
+                                <div class="image-caption">Sitio web completamente funcional</div>
+                            </div>
+                            <div>
+                                <img src="github-repo.png" alt="Repositorio GitHub">
+                                <div class="image-caption">Repositorio con código documentado</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>Valor Profesional</h4>
+                        <p>Proyecto <span class="highlight">práctico aplicando DevOps</span> real</p>
+                        <p>Alineado con <span class="highlight">necesidades reales</span> del entorno profesional</p>
+                        <p>Aplicando <span class="highlight">buenas prácticas:</span> modularidad, seguridad, control de versiones</p>
+                    </div>
+                    <div class="subsection">
+                        <h4>Próximos Pasos</h4>
+                        <p>Completar integración OIDC y optimizaciones adicionales</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </header>
 
-    <main>
-        <section>
-            <h2>Descripción</h2>
-            <p>Este proyecto crea un sitio web estático usando Terraform para gestionar la infraestructura en Azure y GitHub Actions para desplegarlo automáticamente. Ahora incluye autenticación OIDC con Azure AD.</p>
-        </section>
-        
-        <section>
-            <h2>Características</h2>
-            <ul>
-                <li>Infraestructura como código con Terraform</li>
-                <li>Automatización con GitHub Actions</li>
-                <li>Hosting estático en Azure</li>
-                <li>Colaboración mediante Git</li>
-                <li>🔒 Autenticación OIDC con Azure AD</li>
-                <li>🔐 Contenido protegido para usuarios autenticados</li>
-            </ul>
-        </section>
-        
-        <section>
-            <h2>Flujo de trabajo</h2>
-            <p>1. Subo código a GitHub<br />
-               2. GitHub Actions ejecuta el pipeline<br />
-               3. Terraform crea o actualiza recursos en Azure<br />
-               4. Sitio web se publica automáticamente<br />
-               5. ✨ Los usuarios pueden autenticarse con Azure AD</p>
-        </section>
-        
-        <section>
-            <h2>Tecnologías</h2>
-            <p>Terraform, GitHub Actions, Azure, HTML, CSS, Azure AD, OIDC, MSAL.js.</p>
-        </section>
-
-        <section id="protectedContent" class="protected-section" style="display: none;">
-            <h2>🔒 Área Protegida</h2>
-            <p>¡Felicidades! Has iniciado sesión correctamente.</p>
-            <div class="user-info">
-                <h3>Información del Usuario:</h3>
-                <div id="userDetails"></div>
-            </div>
-            <div class="protected-features">
-                <h3>Funcionalidades Exclusivas:</h3>
-                <ul>
-                    <li>📊 Dashboard personalizado del proyecto</li>
-                    <li>📈 Métricas de despliegue</li>
-                    <li>🔧 Configuración avanzada de Terraform</li>
-                    <li>📝 Logs detallados de GitHub Actions</li>
-                </ul>
-            </div>
-        </section>
-        
-        <section>
-            <h2>GitHub</h2>
-            <p>Repositorio: https://github.com/RommelEs/SitioWebEstatico</p>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 Sitio Web Estático con OIDC. Proyecto CI/CD con Terraform.</p>
+        <div class="repo-section">
+            <h2>📂 Repositorio del Proyecto</h2>
+            <p>Código fuente completo y documentación técnica</p>
+            <a href="https://github.com/RommelEs/SitioWebEstatico" class="repo-link" target="_blank">
+                🔗 Ver en GitHub - SitioWebEstatico
+            </a>
         </div>
-    </footer>
-
-    <!-- Scripts de MSAL -->
-    <script src="https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js"></script>
-    <script src="auth-config.js"></script>
-    <script>
-        let username = "";
-
-        // Elementos del DOM
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const loginSection = document.getElementById('loginSection');
-        const userSection = document.getElementById('userSection');
-        const welcomeMessage = document.getElementById('welcomeMessage');
-        const protectedContent = document.getElementById('protectedContent');
-        const userDetails = document.getElementById('userDetails');
-
-        // Event listeners
-        loginBtn.addEventListener('click', signIn);
-        logoutBtn.addEventListener('click', signOut);
-
-        // Función de login
-        function signIn() {
-            myMSALObj.loginPopup(loginRequest)
-                .then(handleResponse)
-                .catch(error => {
-                    console.error('Error en login:', error);
-                    alert('Error al iniciar sesión: ' + error.message);
-                });
-        }
-
-        // Función de logout
-        function signOut() {
-            const logoutRequest = {
-                account: myMSALObj.getAccountByUsername(username)
-            };
-
-            myMSALObj.logoutPopup(logoutRequest)
-                .then(() => {
-                    updateUI();
-                })
-                .catch(error => {
-                    console.error('Error en logout:', error);
-                });
-        }
-
-        // Manejar respuesta de autenticación
-        function handleResponse(response) {
-            if (response !== null) {
-                username = response.account.username;
-                updateUI();
-                getTokenPopup(loginRequest)
-                    .then(response => {
-                        callMSGraph(response.accessToken, updateUserInfo);
-                    })
-                    .catch(error => {
-                        console.error('Error obteniendo token:', error);
-                    });
-            } else {
-                selectAccount();
-            }
-        }
-
-        // Obtener token
-        function getTokenPopup(request) {
-            request.account = myMSALObj.getAccountByUsername(username);
-            return myMSALObj.acquireTokenSilent(request)
-                .catch(error => {
-                    console.warn("Error obteniendo token silencioso");
-                    return myMSALObj.acquireTokenPopup(request);
-                });
-        }
-
-        // Seleccionar cuenta si hay múltiples
-        function selectAccount() {
-            const currentAccounts = myMSALObj.getAllAccounts();
-            if (currentAccounts.length < 1) {
-                return;
-            } else if (currentAccounts.length > 1) {
-                // Si hay múltiples cuentas, usar la primera
-                username = currentAccounts[0].username;
-                updateUI();
-            } else if (currentAccounts.length === 1) {
-                username = currentAccounts[0].username;
-                updateUI();
-            }
-        }
-
-        // Actualizar interfaz de usuario
-        function updateUI() {
-            const account = myMSALObj.getAccountByUsername(username);
-            if (account) {
-                loginSection.style.display = 'none';
-                userSection.style.display = 'block';
-                protectedContent.style.display = 'block';
-                welcomeMessage.textContent = `Hola, ${account.name || account.username}`;
-            } else {
-                loginSection.style.display = 'block';
-                userSection.style.display = 'none';
-                protectedContent.style.display = 'none';
-                welcomeMessage.textContent = '';
-                userDetails.innerHTML = '';
-            }
-        }
-
-        // Llamar a Microsoft Graph API
-        function callMSGraph(accessToken, callback) {
-            const headers = new Headers();
-            const bearer = `Bearer ${accessToken}`;
-            headers.append("Authorization", bearer);
-
-            const options = {
-                method: "GET",
-                headers: headers
-            };
-
-            fetch("https://graph.microsoft.com/v1.0/me", options)
-                .then(response => response.json())
-                .then(response => callback(response))
-                .catch(error => console.error('Error llamando a Graph API:', error));
-        }
-
-        // Actualizar información del usuario
-        function updateUserInfo(graphResponse) {
-            userDetails.innerHTML = `
-                <p><strong>Nombre:</strong> ${graphResponse.displayName || 'N/A'}</p>
-                <p><strong>Email:</strong> ${graphResponse.mail || graphResponse.userPrincipalName || 'N/A'}</p>
-                <p><strong>ID:</strong> ${graphResponse.id || 'N/A'}</p>
-                <p><strong>Cargo:</strong> ${graphResponse.jobTitle || 'N/A'}</p>
-            `;
-        }
-
-        // Inicializar la aplicación
-        myMSALObj.handleRedirectPromise()
-            .then(handleResponse)
-            .catch(error => {
-                console.error('Error manejando redirect:', error);
-            });
-
-        // Verificar si ya hay una sesión activa
-        selectAccount();
-    </script>
+    </div>
 </body>
 </html>
