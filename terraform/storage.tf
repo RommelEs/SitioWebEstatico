@@ -1,16 +1,15 @@
 # ============================================
-# NUEVOS RECURSOS PARA SCREENSHOTS
+# STORAGE ACCOUNT PARA SCREENSHOTS
 # ============================================
 
-# Storage Account para capturas de pantalla
 resource "azurerm_storage_account" "screenshots" {
-  name                     = "screenshots${random_integer.rand.result}"
-  resource_group_name      = azurerm_resource_group.web.name
-  location                 = azurerm_resource_group.web.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
+  name                       = "screenshots97428"
+  resource_group_name        = azurerm_resource_group.web.name
+  location                   = azurerm_resource_group.web.location
+  account_tier               = "Standard"
+  account_replication_type   = "LRS"
   https_traffic_only_enabled = true
-  
+
   blob_properties {
     cors_rule {
       allowed_headers    = ["*"]
@@ -22,7 +21,6 @@ resource "azurerm_storage_account" "screenshots" {
   }
 }
 
-# Container público para las capturas
 resource "azurerm_storage_container" "screenshots" {
   name                  = "screenshots"
   storage_account_name  = azurerm_storage_account.screenshots.name
