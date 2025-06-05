@@ -129,7 +129,7 @@ jobs:
       working-directory: ./terraform
 
     - name: Notify Success
-      if: success() && secrets.SLACK_WEBHOOK_URL != ''
+      if: success()
       uses: 8398a7/action-slack@v3
       with:
         status: success
@@ -139,9 +139,10 @@ jobs:
           Triggered by: ${{ github.actor }}
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      continue-on-error: true
 
     - name: Notify Failure
-      if: failure() && secrets.SLACK_WEBHOOK_URL != ''
+      if: failure()
       uses: 8398a7/action-slack@v3
       with:
         status: failure
@@ -152,3 +153,4 @@ jobs:
           Check the workflow logs for details.
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      continue-on-error: true
