@@ -14,10 +14,11 @@ output "resource_group_name" {
   value       = azurerm_resource_group.web.name
 }
 
-output "random_suffix" {
-  description = "Sufijo aleatorio usado"
-  value       = random_integer.rand.result
-}
+# Eliminar este output:
+# output "random_suffix" {
+#   description = "Sufijo aleatorio usado"
+#   value       = random_integer.rand.result
+# }
 
 # Nuevos outputs para screenshots
 output "screenshots_storage_account_name" {

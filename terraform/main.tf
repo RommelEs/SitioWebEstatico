@@ -14,22 +14,17 @@ provider "azurerm" {
 provider "azuread" {
 }
 
-resource "random_integer" "rand" {
-  min = 10000
-  max = 99999
-}
-
 resource "azurerm_resource_group" "web" {
-  name     = "rg-sitioweb-${random_integer.rand.result}"
+  name     = "rg-sitioweb-97428"
   location = "West Europe"
 }
 
 resource "azurerm_storage_account" "web" {
-  name                     = "sitioweb${random_integer.rand.result}"
-  resource_group_name      = azurerm_resource_group.web.name
-  location                 = azurerm_resource_group.web.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
+  name                       = "sitioweb97428"
+  resource_group_name        = azurerm_resource_group.web.name
+  location                   = azurerm_resource_group.web.location
+  account_tier               = "Standard"
+  account_replication_type   = "LRS"
   https_traffic_only_enabled = true
   
   static_website {
