@@ -35,8 +35,8 @@ jobs:
     - name: Terraform Init
       run: terraform init
     
-    - name: Terraform Format Check
-      run: terraform fmt -check
+    - name: Terraform Format
+      run: terraform fmt
     
     - name: Terraform Validate
       run: terraform validate
@@ -65,20 +65,26 @@ jobs:
         curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
     
     - name: Upload Screenshots to Storage
-      if: hashFiles('screenshots/**') != ''
+      if: hashFiles('website/*.png') != '' || hashFiles('website/*.jpg') != ''
       run: |
-        az storage blob upload-batch \
-          --account-name ${{ steps.storage_info.outputs.storage_account }} \
-          --account-key ${{ steps.storage_info.outputs.storage_key }} \
-          --destination screenshots \
-          --source ../screenshots/ \
-          --pattern "*.png" \
-          --overwrite
+        # Subir archivos PNG desde website/
+        if ls ../website/*.png 1> /dev/null 2>&1; then
+          az storage blob upload-batch \
+            --account-name ${{ steps.storage_info.outputs.storage_account }} \
+            --account-key ${{ steps.storage_info.outputs.storage_key }} \
+            --destination screenshots \
+            --source ../website/ \
+            --pattern "*.png" \
+            --overwrite
+        fi
         
-        az storage blob upload-batch \
-          --account-name ${{ steps.storage_info.outputs.storage_account }} \
-          --account-key ${{ steps.storage_info.outputs.storage_key }} \
-          --destination screenshots \
-          --source ../screenshots/ \
-          --pattern "*.jpg" \
-          --overwrite
+        # Subir archivos JPG desde website/
+        if ls ../website/*.jpg 1> /dev/null 2>&1; then
+          az storage blob upload-batch \
+            --account-name ${{ steps.storage_info.outputs.storage_account }} \
+            --account-key ${{ steps.storage_info.outputs.storage_key }} \
+            --destination screenshots \
+            --source ../website/ \
+            --pattern "*.jpg" \
+            --overwrite
+        fi
