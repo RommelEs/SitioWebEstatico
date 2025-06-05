@@ -1,4 +1,4 @@
-name: Terraform Destroy Infrastructure
+name: 'Terraform Destroy'
 
 on:
   workflow_dispatch:
@@ -6,153 +6,146 @@ on:
       environment:
         description: 'Environment to destroy'
         required: true
-        default: 'development'
+        default: 'dev'
         type: choice
         options:
-          - development
+          - dev
           - staging
-          - production
+          - prod
       confirm_destroy:
-        description: 'Type "DESTROY" to confirm'
+        description: 'Type "DESTROY" to confirm deletion'
         required: true
         type: string
 
+env:
+  TF_VERSION: '1.6.0'
+  TF_VAR_environment: ${{ github.event.inputs.environment }}
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
 jobs:
-  destroy:
+  terraform-destroy:
+    name: 'Terraform Destroy'
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
     
-    defaults:
-      run:
-        working-directory: ./terraform
-    
-    env:
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      TF_VAR_app_client_id: ${{ secrets.AZURE_CLIENT_ID }}
-      TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-      TF_VAR_github_repo: RommelEs/SitioWebEstatico
+    # Protección adicional - solo permitir en branches específicos
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     
     steps:
-    - name: Validate execution context
+    - name: Validate destroy confirmation
       run: |
-        echo "🚨 INFRASTRUCTURE DESTROY REQUESTED"
-        echo "Environment: ${{ github.event.inputs.environment }}"
-        echo "Requested by: ${{ github.actor }}"
-        echo "Repository: ${{ github.repository }}"
-        
-        # Validate confirmation input
         if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
-          echo "❌ Confirmation failed. You must type 'DESTROY' exactly."
+          echo "❌ Destroy confirmation failed. You must type 'DESTROY' to proceed."
           exit 1
         fi
-        
-        echo "✅ Confirmation validated"
+        echo "✅ Destroy confirmation validated"
 
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
-
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
-
-    - name: Verify Azure connection
-      run: |
-        echo "🔍 Verifying Azure connection..."
-        az account show
-        az account list --output table
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 'latest'
-        terraform_wrapper: false
+        terraform_version: ${{ env.TF_VERSION }}
 
-    - name: Verify Terraform installation
-      run: |
-        echo "🔍 Verifying Terraform installation..."
-        terraform version
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: |
+          {
+            "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+            "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+            "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+            "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
+          }
 
     - name: Terraform Init
       run: |
-        echo "🔧 Initializing Terraform..."
-        terraform init
-        
-    - name: Terraform Validate
-      run: |
-        echo "✅ Validating Terraform configuration..."
-        terraform validate
+        terraform init \
+          -backend-config="resource_group_name=rg-terraform-backend" \
+          -backend-config="storage_account_name=tfbackend1749141799" \
+          -backend-config="container_name=tfstate" \
+          -backend-config="key=${{ github.event.inputs.environment }}-terraform.tfstate"
+      working-directory: ./terraform
 
-    - name: Check current state
+    - name: Terraform Plan Destroy
+      id: plan
       run: |
-        echo "🔍 Checking current Terraform state..."
-        terraform show
-        echo ""
-        echo "📋 Resources in state:"
-        terraform state list
-
-    - name: Generate and show destroy plan
-      run: |
-        echo "📋 Generating destroy plan..."
         terraform plan -destroy -out=destroy.tfplan
-        echo ""
-        echo "🚨 RESOURCES TO BE DESTROYED:"
-        terraform show destroy.tfplan
+        terraform show -no-color destroy.tfplan > destroy_plan.txt
+      working-directory: ./terraform
 
-    - name: Final confirmation and delay
+    - name: Show Destroy Plan
       run: |
-        echo "⚠️  FINAL WARNING: This will destroy all infrastructure!"
-        echo "Environment: ${{ github.event.inputs.environment }}"
-        echo "Waiting 30 seconds before proceeding..."
-        sleep 30
-        echo "🚀 Proceeding with destruction..."
+        echo "## 🔥 Terraform Destroy Plan for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Resources to be destroyed:" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        head -50 terraform/destroy_plan.txt >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+    - name: Wait for manual approval
+      uses: trstringer/manual-approval@v1
+      timeout-minutes: 30
+      with:
+        secret: ${{ github.TOKEN }}
+        approvers: ${{ vars.DESTROY_APPROVERS }}
+        minimum-approvals: 2
+        issue-title: "🔥 Approve Terraform Destroy for ${{ github.event.inputs.environment }}"
+        issue-body: |
+          **Environment:** ${{ github.event.inputs.environment }}
+          **Triggered by:** @${{ github.actor }}
+          **Branch:** ${{ github.ref_name }}
+          
+          **⚠️ WARNING: This will permanently destroy infrastructure!**
+          
+          Please review the destroy plan carefully before approving.
+          
+          ### Resources to be destroyed:
+          See the workflow run for the complete destroy plan.
 
     - name: Terraform Destroy
       run: |
-        echo "💥 Executing Terraform destroy..."
+        echo "🔥 Starting infrastructure destruction..."
         terraform apply -auto-approve destroy.tfplan
-        
-    - name: Verify destruction completion
-      run: |
-        echo "🔍 Verifying destruction completion..."
-        terraform state list || echo "✅ State is empty - destruction completed"
+        echo "✅ Infrastructure destroyed successfully"
+      working-directory: ./terraform
 
-    - name: Final success confirmation
+    - name: Cleanup State (Optional)
+      if: success()
       run: |
-        echo "✅ INFRASTRUCTURE DESTROY COMPLETED SUCCESSFULLY"
-        echo "Environment: ${{ github.event.inputs.environment }}"
-        echo "Destroyed by: ${{ github.actor }}"
-        echo "Timestamp: $(date)"
+        echo "✅ Infrastructure destroyed successfully"
+        echo "State file: ${{ github.event.inputs.environment }}-terraform.tfstate"
+        # Uncomment the next lines if you want to delete the state file after destroy
+        # az storage blob delete --account-name tfbackend1749141799 \
+        #   --container-name tfstate \
+        #   --name "${{ github.event.inputs.environment }}-terraform.tfstate"
+      working-directory: ./terraform
 
-    - name: Cleanup and diagnostics on failure
-      if: failure()
-      run: |
-        echo "❌ DESTROY PROCESS FAILED"
-        echo "🔍 Performing failure diagnostics..."
-        
-        echo "Current Terraform state:"
-        terraform state list || echo "Unable to list state"
-        
-        echo ""
-        echo "Resources still in state:"
-        terraform show || echo "Unable to show state"
-        
-        echo ""
-        echo "💡 RECOVERY SUGGESTIONS:"
-        echo "1. Check the logs above for specific error messages"
-        echo "2. Manually review Azure portal for stuck resources"
-        echo "3. Run individual 'terraform destroy -target=RESOURCE' for problematic resources"
-        echo "4. Contact team if persistent issues occur"
-
-    - name: Upload failure diagnostics
-      if: failure()
-      uses: actions/upload-artifact@v4
+    - name: Notify Success
+      if: success()
+      uses: 8398a7/action-slack@v3
       with:
-        name: destroy-failure-diagnostics-${{ github.event.inputs.environment }}-${{ github.run_id }}
-        path: |
-          terraform/terraform.tfstate*
-          terraform/.terraform/
-          terraform/destroy.tfplan
-        retention-days: 30
+        status: success
+        text: |
+          🔥 Infrastructure destroyed successfully!
+          Environment: ${{ github.event.inputs.environment }}
+          Triggered by: ${{ github.actor }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Notify Failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        text: |
+          ❌ Terraform destroy failed!
+          Environment: ${{ github.event.inputs.environment }}
+          Triggered by: ${{ github.actor }}
+          Check the workflow logs for details.
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
