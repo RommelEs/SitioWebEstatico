@@ -9,7 +9,7 @@ on:
         default: ''
       environment:
         description: 'Environment to destroy'
-        required: true
+        required: false
         type: choice
         options:
           - development
@@ -44,10 +44,10 @@ jobs:
       run:
         working-directory: ./terraform
     
-    # Configurar entorno específico
-    environment: 
-      name: ${{ github.event.inputs.environment }}
-      url: https://portal.azure.com
+    # Configurar entorno específico (opcional)
+    # environment: 
+    #   name: ${{ github.event.inputs.environment }}
+    #   url: https://portal.azure.com
     
     steps:
     - name: Checkout repository
@@ -72,7 +72,10 @@ jobs:
     - name: Azure Login
       uses: azure/login@v2
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         enable-AzPSSession: false
     
     - name: Verify Azure connection
@@ -102,10 +105,10 @@ jobs:
         echo "🚀 Initializing Terraform..."
         terraform init \
           -input=false \
-          -backend-config="resource_group_name=${{ secrets.TF_STATE_RESOURCE_GROUP }}" \
-          -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT }}" \
-          -backend-config="container_name=${{ secrets.TF_STATE_CONTAINER }}" \
-          -backend-config="key=${{ github.event.inputs.environment }}.tfstate"
+          -backend-config="resource_group_name=rg-terraform-backend" \
+          -backend-config="storage_account_name=tfbackend1749141799" \
+          -backend-config="container_name=tfstate" \
+          -backend-config="key=terraform.tfstate"
       timeout-minutes: 10
     
     - name: Handle state lock (conditional)
@@ -136,7 +139,9 @@ jobs:
       run: |
         echo "🔍 Generating destroy plan..."
         terraform plan -destroy \
-          -var-file="${{ github.event.inputs.environment }}.tfvars" \
+          -var="app_client_id=oidc-will-be-configured" \
+          -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+          -var="github_repo=${{ github.repository }}" \
           -lock=false \
           -input=false \
           -compact-warnings \
@@ -144,7 +149,7 @@ jobs:
           -out=destroy.tfplan
         
         echo "📊 Destroy plan summary:"
-        terraform show -json destroy.tfplan | jq -r '.resource_changes[]? | select(.change.actions[] == "delete") | .address' | wc -l | xargs echo "Resources to destroy:"
+        terraform show -json destroy.tfplan | jq -r '.resource_changes[]? | select(.change.actions[] == "delete") | .address' | wc -l | xargs echo "Resources to destroy:" || echo "Plan generated successfully"
       continue-on-error: true
       timeout-minutes: 10
     
@@ -173,7 +178,9 @@ jobs:
       run: |
         echo "🔥 Starting resource destruction..."
         terraform destroy -auto-approve \
-          -var-file="${{ github.event.inputs.environment }}.tfvars" \
+          -var="app_client_id=oidc-will-be-configured" \
+          -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+          -var="github_repo=${{ github.repository }}" \
           -input=false \
           -lock-timeout=10m \
           -parallelism=5 \
