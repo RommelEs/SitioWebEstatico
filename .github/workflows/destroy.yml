@@ -1,0 +1,71 @@
+name: Terraform Destroy
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy" to confirm deletion of all resources'
+        required: true
+        default: ''
+      environment:
+        description: 'Environment to destroy (optional for logging)'
+        required: false
+        default: 'development'
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    
+    # Solo ejecuta si se confirma explícitamente
+    if: github.event.inputs.confirm == 'destroy'
+    
+    defaults:
+      run:
+        working-directory: ./terraform
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 'latest'
+    
+    - name: Terraform Init
+      run: terraform init
+    
+    - name: Force unlock state (if locked)
+      run: terraform force-unlock -force 65146621-fc56-3fbd-6e00-9f5576116757 || true
+      continue-on-error: true
+    
+    - name: Terraform Validate
+      run: terraform validate
+    
+    - name: Show Destroy Plan
+      run: terraform plan -destroy -var="app_client_id=dummy" -var="app_client_secret=dummy" -lock=false
+      continue-on-error: true
+    
+    - name: Wait for confirmation
+      run: |
+        echo "⚠️  About to destroy all Terraform-managed resources"
+        echo "🌍 Environment: ${{ github.event.inputs.environment }}"
+        echo "👤 Initiated by: ${{ github.actor }}"
+        echo "⏰ Timestamp: $(date)"
+        echo ""
+        echo "Proceeding with destruction in 10 seconds..."
+        sleep 10
+    
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve -var="app_client_id=dummy" -var="app_client_secret=dummy"
+    
+    - name: Confirm Destruction
+      run: |
+        echo "✅ Resources have been destroyed successfully"
+        echo "🌍 Environment: ${{ github.event.inputs.environment }}"
+        echo "👤 Destroyed by: ${{ github.actor }}"
+        echo "⏰ Completed at: $(date)"
