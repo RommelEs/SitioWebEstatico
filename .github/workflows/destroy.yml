@@ -1,179 +1,46 @@
-name: 'Destroy Website Resources'
-
+name: Terraform Destroy
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Environment to destroy'
+      confirm:
+        description: 'Type "destroy" to confirm'
         required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - staging
-          - prod
-      confirm_destroy:
-        description: 'Type "DESTROY" to confirm deletion'
-        required: true
-        type: string
-
-env:
-  TF_VERSION: '1.6.0'
-  TF_VAR_environment: ${{ github.event.inputs.environment }}
-  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        default: ''
 
 jobs:
-  destroy-website-resources:
-    name: 'Destroy Website Resources'
+  terraform:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    if: github.event.inputs.confirm == 'destroy'
     
-    # Protección adicional - solo permitir en branches específicos
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    defaults:
+      run:
+        working-directory: ./terraform
+    
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      TF_VAR_github_repo: RommelEs/SitioWebEstatico
     
     steps:
-    - name: Validate destroy confirmation
-      run: |
-        if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
-          echo "❌ Destroy confirmation failed. You must type 'DESTROY' to proceed."
-          exit 1
-        fi
-        echo "✅ Destroy confirmation validated"
-
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: |
-          {
-            "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
-            "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
-            "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
-            "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
-          }
-
-    - name: List Current Website Resources
-      run: |
-        echo "🔍 Current Website Resources in rg-sitoweb-44534:"
-        az resource list --resource-group rg-sitoweb-44534 --output table || echo "Resource group not found"
-        echo ""
-        echo "🔍 Storage accounts that might contain the website:"
-        az storage account list --resource-group rg-sitoweb-44534 --output table || echo "No storage accounts found"
-
+    
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: ${{ env.TF_VERSION }}
-
-    - name: Terraform Destroy Website Infrastructure
-      run: |
-        echo "🔄 Attempting Terraform destroy for website infrastructure..."
-        
-        # Verificar si existe el estado de Terraform
-        if az storage blob exists --account-name tfbackend1749141799 --container-name tfstate --name "${{ github.event.inputs.environment }}-terraform.tfstate" --output tsv 2>/dev/null | grep -q "True"; then
-          echo "📁 Terraform state found, proceeding with Terraform destroy..."
-          
-          terraform init \
-            -backend-config="resource_group_name=rg-terraform-backend" \
-            -backend-config="storage_account_name=tfbackend1749141799" \
-            -backend-config="container_name=tfstate" \
-            -backend-config="key=${{ github.event.inputs.environment }}-terraform.tfstate"
-          
-          echo "📋 Generating destroy plan..."
-          terraform plan -destroy -out=destroy.tfplan
-          
-          echo "🔥 Executing Terraform destroy..."
-          terraform apply -auto-approve destroy.tfplan
-          
-          echo "✅ Terraform destroy completed successfully"
-        else
-          echo "ℹ️ No Terraform state found for environment: ${{ github.event.inputs.environment }}"
-          echo "Will proceed with direct Azure resource deletion"
-        fi
-      working-directory: ./terraform
-      continue-on-error: true
-
-    - name: Force Delete Website Resource Group
-      run: |
-        echo "🔥 Checking and deleting website resource group: rg-sitoweb-44534"
-        
-        if az group exists --name rg-sitoweb-44534; then
-          echo "📋 Resources in rg-sitoweb-44534 before deletion:"
-          az resource list --resource-group rg-sitoweb-44534 --output table
-          
-          echo "🔓 Removing any resource locks..."
-          az lock delete --resource-group rg-sitoweb-44534 --lock-type CannotDelete 2>/dev/null || echo "No CannotDelete locks found"
-          az lock delete --resource-group rg-sitoweb-44534 --lock-type ReadOnly 2>/dev/null || echo "No ReadOnly locks found"
-          
-          echo "🔥 Initiating resource group deletion..."
-          az group delete --name rg-sitoweb-44534 --yes --no-wait
-          
-          echo "✅ Website resource group deletion initiated"
-        else
-          echo "ℹ️ Resource group rg-sitoweb-44534 not found or already deleted"
-        fi
-
-    - name: Wait for deletion to complete
-      run: |
-        echo "⏳ Waiting for website resource group deletion to complete..."
-        
-        max_attempts=60  # 30 minutes maximum
-        attempt=0
-        
-        while az group exists --name rg-sitoweb-44534 2>/dev/null && [ $attempt -lt $max_attempts ]; do
-          echo "⏳ Still deleting rg-sitoweb-44534... (attempt $((attempt + 1))/$max_attempts)"
-          sleep 30
-          attempt=$((attempt + 1))
-        done
-        
-        if az group exists --name rg-sitoweb-44534 2>/dev/null; then
-          echo "⚠️ Resource group deletion is taking longer than expected"
-          echo "Check Azure portal for deletion status"
-        else
-          echo "✅ rg-sitoweb-44534 deleted successfully!"
-        fi
-
-    - name: Cleanup Terraform State
-      run: |
-        echo "🧹 Cleaning up Terraform state for environment: ${{ github.event.inputs.environment }}"
-        
-        # Eliminar el archivo de estado específico del entorno
-        if az storage blob exists --account-name tfbackend1749141799 --container-name tfstate --name "${{ github.event.inputs.environment }}-terraform.tfstate" --output tsv 2>/dev/null | grep -q "True"; then
-          echo "🗑️ Deleting Terraform state file: ${{ github.event.inputs.environment }}-terraform.tfstate"
-          az storage blob delete \
-            --account-name tfbackend1749141799 \
-            --container-name tfstate \
-            --name "${{ github.event.inputs.environment }}-terraform.tfstate"
-          echo "✅ Terraform state file deleted"
-        else
-          echo "ℹ️ No Terraform state file found to delete"
-        fi
-
-    - name: Verify Cleanup
-      run: |
-        echo "🔍 Final verification:"
-        echo ""
-        echo "Website Resource Group Status:"
-        if az group exists --name rg-sitoweb-44534 2>/dev/null; then
-          echo "❌ rg-sitoweb-44534 still exists"
-          az resource list --resource-group rg-sitoweb-44534 --output table
-        else
-          echo "✅ rg-sitoweb-44534 successfully deleted"
-        fi
-        
-        echo ""
-        echo "Terraform Backend Status:"
-        if az group exists --name rg-terraform-backend 2>/dev/null; then
-          echo "✅ rg-terraform-backend preserved (as requested)"
-        else
-          echo "⚠️ rg-terraform-backend not found"
-        fi
-        
-        echo ""
-        echo "🎉 Website destruction completed!"
-        echo "Your website resources have been removed from Azure."
+        terraform_version: 'latest'
+    
+    - name: Terraform Init
+      run: terraform init
+    
+    - name: Terraform Plan Destroy
+      run: terraform plan -destroy -out=tfdestroy
+    
+    - name: Show Destroy Plan
+      run: terraform show tfdestroy
+    
+    - name: Terraform Destroy
+      if: github.event.inputs.confirm == 'destroy'
+      run: terraform destroy -auto-approve
