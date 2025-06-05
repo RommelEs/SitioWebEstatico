@@ -43,7 +43,7 @@ jobs:
       run: terraform validate
     
     - name: Show Destroy Plan
-      run: terraform plan -destroy
+      run: terraform plan -destroy -var="app_client_id=dummy" -var="app_client_secret=dummy"
       continue-on-error: true
     
     - name: Wait for confirmation
@@ -57,7 +57,7 @@ jobs:
         sleep 10
     
     - name: Terraform Destroy
-      run: terraform destroy -auto-approve
+      run: terraform destroy -auto-approve -var="app_client_id=dummy" -var="app_client_secret=dummy"
     
     - name: Confirm Destruction
       run: |
