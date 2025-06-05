@@ -92,7 +92,7 @@ jobs:
       timeout-minutes: 30
       with:
         secret: ${{ github.TOKEN }}
-        approvers: ${{ github.actor }}
+        approvers: ${{ github.repository_owner }}  # Usa el owner del repo
         minimum-approvals: 1
         issue-title: "🔥 Approve Terraform Destroy for ${{ github.event.inputs.environment }}"
         issue-body: |
@@ -129,7 +129,7 @@ jobs:
       working-directory: ./terraform
 
     - name: Notify Success
-      if: success() && env.SLACK_WEBHOOK_URL != ''
+      if: success() && secrets.SLACK_WEBHOOK_URL != ''
       uses: 8398a7/action-slack@v3
       with:
         status: success
@@ -141,7 +141,7 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     - name: Notify Failure
-      if: failure() && env.SLACK_WEBHOOK_URL != ''
+      if: failure() && secrets.SLACK_WEBHOOK_URL != ''
       uses: 8398a7/action-slack@v3
       with:
         status: failure
