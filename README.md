@@ -33,9 +33,11 @@ Actualmente estoy trabajando en implementar autenticación segura mediante OIDC.
 
 ---
 
-## Capturas (opcional)
+## Gestión de imágenes estáticas
 
-*Incluye una imagen del diagrama o de la web desplegada si puedes.*
+Las imágenes utilizadas en el sitio web se almacenan en **Azure Blob Storage**, y se referencian directamente en el HTML mediante la URL pública del blob.
+
+Esto permite mantener el contenido multimedia separado del código fuente, facilitando actualizaciones y escalabilidad.
 
 ---
 
